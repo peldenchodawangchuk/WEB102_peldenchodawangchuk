@@ -1,34 +1,34 @@
 const express = require('express');
 const cors = require('cors');
 const prisma = require('./prisma');
+const { parse } = require('postcss');
 
 const app = express();
-const port = 5100;
+const port = 5100; //Using a diff port fron the original app
 
-// Middleware
+//middleware
 app.use(cors());
 app.use(express.json());
 
-// Get all students
+//routes
 app.get('/students', async (req, res) => {
     try {
         const students = await prisma.student.findMany();
         res.json(students);
     } catch (error) {
         console.error('Error fetching students:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-// Get one student by ID
 app.get('/students/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-
+        //Using prisma to fetch a student by id
         const student = await prisma.student.findUnique({
-            where: { id }
+            where: { id },
         });
-
+        
         if (!student) {
             return res.status(404).json({ error: 'Student not found' });
         }
@@ -36,38 +36,38 @@ app.get('/students/:id', async (req, res) => {
         res.json(student);
     } catch (error) {
         console.error('Error fetching student:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-// Create a new student
 app.post('/students', async (req, res) => {
     try {
         const { name, email, course, enrollment_date } = req.body;
 
+        //using prisma to create a new student
         const newStudent = await prisma.student.create({
             data: {
                 name,
                 email,
                 course,
-                enrollment_date: new Date(enrollment_date)
-            }
+                enrollment_date: new Date(enrollment_date),
+            },
         });
 
         res.status(201).json(newStudent);
     } catch (error) {
         console.error('Error creating student:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+        res.status(500).json({ error: 'Internal Server Error' });
+    }  
 });
 
-// Gracefully shut down Prisma when the app terminates
+//Gracefully shutdown the server and disconnect from the database
 process.on('SIGINT', async () => {
     await prisma.$disconnect();
-    process.exit();
+    process.exit(0);
 });
 
-// Start the server
+//start the server
 app.listen(port, () => {
-    console.log(`Prisma server running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port}`);
 });
