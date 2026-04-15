@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const prisma = require('./prisma');
-const { parse } = require('postcss');
 
 const app = express();
 const port = 5100; //Using a diff port fron the original app
